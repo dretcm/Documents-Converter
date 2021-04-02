@@ -8,7 +8,7 @@ class ConvertImages2Pdf(QWidget):
         def __init__(self):
                 super().__init__()
                 self.output = 'output'
-                self.data_path = []
+                self.data_path = {}
 
                 #self.setStyleSheet('background:white;')
 
@@ -44,6 +44,7 @@ class ConvertImages2Pdf(QWidget):
                 self.data = QListWidget(self)
                 self.data.setStyleSheet('font: 12pt "Arial";')
                 self.data.setGeometry(5, 60, 410, 150)
+                self.data.setDragDropMode(self.data.InternalMove)
 
                 # functions:
 
@@ -55,23 +56,28 @@ class ConvertImages2Pdf(QWidget):
                 self.data.clear()
                 self.data_path.clear()
 
-        def convert(self,labels):
+        def convert(self):
                 folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-                path = os.path.join(folder,self.output + '.pdf')
-                imgs = []
+                outpath = os.path.join(folder,self.output + '.pdf')
 
-                for l in labels[1:]:
-                        img = Image.open(l).convert('RGB')
+                paths = []
+                imgs = []
+                
+                for i in range(self.data.count()):
+                        paths.append(self.data_path[self.data.item(i).text()])
+
+                for path in paths[1:]:
+                        img = Image.open(path).convert('RGB')
                         imgs.append(img)
                         
-                img = Image.open(labels[0]).convert('RGB')
-                img.save(path,save_all=True, append_images=imgs)
+                img = Image.open(paths[0]).convert('RGB')
+                img.save(outpath,save_all=True, append_images=imgs)
                 img.close()
                 
         def run_convert(self):
                 try:
                         self.output = self.entry.text()
-                        self.convert(self.data_path)
+                        self.convert()
                         Dialogs.dialog(title='SUCCESSFULL',text=f'* The process was successfull.\n* {self.output}.pdf',icon=False)
                         
                 except Exception as e:
@@ -81,11 +87,11 @@ class ConvertImages2Pdf(QWidget):
         def openfile(self):
                 options = QFileDialog.Options()
                 filenames, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Images jpg (*.jpg);;Images PNG (*.png)", options=options)
-                print(filenames)
                 if filenames:
                         for filename in filenames:
-                                self.data_path.append(filename)
-                                self.data.addItem(str(os.path.basename(filename)))
+                                file_name = str(os.path.basename(filename))
+                                self.data_path[file_name] = filename
+                                self.data.addItem(file_name)
                     
 
 if __name__=='__main__':
