@@ -1,2 +1,2 @@
 # Documents-Converter
-Convert documents, images.
+Convert documents(docx to pdf and viceverse), images, merge pds.
